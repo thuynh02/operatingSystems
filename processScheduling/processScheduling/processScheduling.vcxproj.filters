@@ -15,19 +15,8 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="FCFS.cpp">
+    <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="Processes.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="scheduling.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="random-numbers.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
   </ItemGroup>
 </Project>
