@@ -1,5 +1,5 @@
 ProcessFile=Processes.txt
 IOdelay=2
 ContextSwitchDelay=1
-CTSSQueues=5
+CTSSQueues=4
 Debug=true
