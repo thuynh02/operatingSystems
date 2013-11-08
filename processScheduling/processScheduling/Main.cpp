@@ -8,8 +8,8 @@ using namespace std;
 
 class Process{
 private:
-	unsigned int pid, arrivalTime, totalCPU, avgBurst;
-	unsigned int elapsedTime, timeLeft, burstInterval;
+	unsigned int pid, arrivalTime, totalCPU, avgBurst; //General information about the process
+	unsigned int elapsedTime, timeLeft, burstInterval; //Time tracking data members used in the scheduling algorithms
 	unsigned int guaranteedTime, priorityLevel; //CTSS specific
 public:
 
@@ -21,17 +21,17 @@ public:
 	int getWaitTime(){ return elapsedTime; }				//Returns the amount of time the process has waited
 	int getTimeLeft(){ return timeLeft; }					//Returns the remaining time left the process needs in the CPU
 	int getBurstInterval(){ return burstInterval; }			//Returns the current amount of time spent in the CPU (loop iterations)
-	int getGuaranteedTime(){ return guaranteedTime; }
-	int getPriorityLevel(){ return priorityLevel; }
+	int getGuaranteedTime(){ return guaranteedTime; }		//Returns the guaranteed time left given to the process
+	int getPriorityLevel(){ return priorityLevel; }			//Returns the current priority level of the process
 
 	//Mutators
 	void incrementWaitTime() { elapsedTime++; }				//Increment the time the process has been waiting (called when waiting for IO)
 	void incrementburstInterval() { burstInterval++; }		//Increment the time spent in the CPU - Should be called after each loop iteration
-	void incrementPriority(){ priorityLevel++; }
-	void decrementPriority(){ priorityLevel--; }
+	void incrementPriority(){ priorityLevel++; }			//Increment the priority level of the process
+	void decrementPriority(){ priorityLevel--; }			//Decrement the priorit level of the process
 	void decrementTimeLeft(){ timeLeft--; }					//Decrement total time needed in CPU  - Should be called after each loop iteration
-	void decrementGuaranteedTime(){ guaranteedTime--; }
-	void setGuaranteedTime( int t ){ guaranteedTime = t; }
+	void decrementGuaranteedTime(){ guaranteedTime--; }		//Decrement the guaranteed time left
+	void setGuaranteedTime( int t ){ guaranteedTime = t; }	//Sets the guaranteed time - Used to assign time quantums 
 
 	//Resets
 	void resetWaitTime() { elapsedTime = 0; }
@@ -40,7 +40,7 @@ public:
 	//Constructor
 	Process( unsigned int pid, unsigned int arrivalTime, unsigned int totalCPU, unsigned int averageBurst) 
 		: pid( pid ), arrivalTime( arrivalTime ), totalCPU( totalCPU ), avgBurst( averageBurst ), 
-		  elapsedTime( 0 ), timeLeft( totalCPU ), burstInterval( 0 ), guaranteedTime(0), priorityLevel(0) {}
+		  elapsedTime( 0 ), timeLeft( totalCPU ), burstInterval( 0 ), guaranteedTime(1), priorityLevel(0) {}
 };
 class Scheduler{
 protected:
@@ -49,20 +49,20 @@ protected:
 	unsigned int ioDelay, contextSwitchDelay;
 	unsigned int sElapsedTime;
 	size_t randomIntPos;
+
 public:
 	Scheduler( int ioDelay, int contextSwitchDelay, bool debug, ifstream& randomFile ) 
 		: ioDelay( ioDelay ), contextSwitchDelay( contextSwitchDelay ), sElapsedTime( 0 ), randomIntPos( 0 ), debug( debug ) {
 		string randomLine;
 		if (!randomFile ){ cerr << "Could not open the file." << endl; exit(1); }
 		while( getline( randomFile, randomLine ) ){ randomInts.push_back( atoi( randomLine.c_str() ) ); }
-
 	}
 
 	//Simulates and outputs the probability that a process is complete using the vector of random integers. 
 	//The return value is the next random number of the vector dividied by 2^31
 	double getProbability(){ 
 		double randomNum = randomInts[randomIntPos++] / pow( 2, 31 );
-		cout << "[Random number (" << randomIntPos << "): " << randomInts[randomIntPos-1] << "] Probability == " << randomNum << endl;
+		cout << "[Random number (" << randomIntPos << "): " << randomInts[randomIntPos-1] << "]\nProbability == " << randomNum << endl;
 		return randomNum; 
 	}
 
@@ -174,16 +174,9 @@ public:
 				}
 			}
 
-			//If there's a process ready to be put into the running stage and it is open, let it run!
-			if( readyQueue.size() > 0 && running == NULL && !endBurstTrigger) {
-				running = readyQueue.front();
-				running->resetBurstInterval();
-				readyQueue.pop_front();
-				cout << "Time " << sElapsedTime << ": Moving process " << running->getPID() << " from ready to running. Remaining Time: " << running->getTimeLeft() << endl;
-			}
-
+			
 			//Otherwise, if the running stage is occupied, check the current process' progress.
-			else if( running != NULL ){
+			if( running != NULL ){
 				running->decrementTimeLeft(); running->incrementburstInterval(); 
 				if( running->getTimeLeft() == 0 ) { 
 					cout << "Time " << sElapsedTime << ": Process " << running->getPID() << " finished." << endl;
@@ -193,8 +186,16 @@ public:
 					cout << "Time " << sElapsedTime << ": Process " << running->getPID() << " ending burst (" << running->getBurstInterval() << ").  Remaining time: " << running->getTimeLeft() << endl;
 					waitingQueue.push_back( running ); running = NULL; 
 				}
-				endBurstTrigger = true; 
+				if( contextSwitchDelay > 0 ) { endBurstTrigger = true; }
 			}
+			//If there's a process ready to be put into the running stage and it is open, let it run!
+			if( readyQueue.size() > 0 && running == NULL && !endBurstTrigger) {
+				running = readyQueue.front();
+				running->resetBurstInterval();
+				readyQueue.pop_front();
+				cout << "Time " << sElapsedTime << ": Moving process " << running->getPID() << " from ready to running. Remaining Time: " << running->getTimeLeft() << endl;
+			}
+
 			sElapsedTime++;
 		}
 	}
@@ -252,6 +253,7 @@ public:
 		cout << "==========" << endl;
 	}
 
+	//Returns true if the ready  are empty. Otherwise, false
 	bool areReadyQueuesEmpty() {
 		bool trigger = true;
 		for( size_t i = 0; i < readyQueues.size(); i++ ){
@@ -260,6 +262,7 @@ public:
 		return trigger;
 	}
 	
+	//Returns the lowest index of an occupied queue in the readyQueues. This is the highest occupied priority
 	size_t getHighestPrioritizedProcessQueue(){
 		for( size_t i = 0; i < readyQueues.size(); i++ ){
 			if( readyQueues[i].size() > 0 ) { return i; }
@@ -274,8 +277,8 @@ public:
 		int quantum = 0;
 		int highestOccupiedPriority = 0;
 		bool endOfAvgBurst = false;
-		bool endBurstTrigger = false;			//Used to determine if a burst/burstie was finished (acts as context switch flag)
-		unsigned int idleTime = 0;				//This keeps track of the time where nothing can enter running. (for context switch)
+		bool endBurstTrigger = false;		//Used to determine if a burst/burstie was finished (acts as context switch flag)
+		unsigned int idleTime = 0;			//This keeps track of the time where nothing can enter running. (for context switch)
 
 		//While there is something in any of the stages
 		while( arrivalQueue.size() > 0 || waitingQueue.size() > 0 || !areReadyQueuesEmpty() || running != NULL ) {
@@ -298,6 +301,7 @@ public:
 						 << ": Moving process " << waitingQueue.front()->getPID() << " from waiting to ready." << endl;
 					waitingQueue.front()->resetWaitTime();
 					waitingQueue.front()->resetBurstInterval();
+					waitingQueue.front()->setGuaranteedTime( pow( 2, waitingQueue.front()->getPriorityLevel() ) );
 					readyQueues[waitingQueue.front()->getPriorityLevel()].push_back( waitingQueue.front() );
 					waitingQueue.pop_front();
 				}
@@ -318,25 +322,13 @@ public:
 				}
 			}
 
-			//If there's a process ready to be put into the running stage and it is open, let it run!
-			if( running == NULL && !endBurstTrigger && !areReadyQueuesEmpty()) {
-				highestOccupiedPriority = getHighestPrioritizedProcessQueue();
-				running = readyQueues[ highestOccupiedPriority ].front();
-				running->setGuaranteedTime( pow(2, running->getPriorityLevel()) );
-				readyQueues[ highestOccupiedPriority ].pop_front();
-				cout << "Time " << sElapsedTime 
-					 << ": Moving process " << running->getPID() 
-					 << " from ready to running. Remaining Time: " << running->getTimeLeft() << endl;
-			}
-
-			//Otherwise, if the running stage is occupied, check the current process' progress.
-			else if( running != NULL ){
+			//If the running stage is occupied, check the current process' progress.
+			if( running != NULL ){
 				highestOccupiedPriority = getHighestPrioritizedProcessQueue();
 				quantum = pow(2, running->getPriorityLevel());
 				running->decrementGuaranteedTime(); 
 				running->decrementTimeLeft(); 
 				running->incrementburstInterval(); 
-				endOfAvgBurst = endBurst( running ); 
 
 				//Check if it has used up all the CPU time it needs
 				if( running->getTimeLeft() == 0 ) { 
@@ -345,12 +337,15 @@ public:
 				}
 				
 				//Check if avg burst is finished & adjust priority accordingly
-				else if( endOfAvgBurst ){
-					if( running->getPriorityLevel() != 0 && 
-						running->getBurstInterval() - running->getGuaranteedTime() <= quantum/2 ){ running->decrementPriority(); }
+				else if( endBurst( running ) ){
 					cout << "Time " << sElapsedTime 
 						 << ": Process " << running->getPID() 
 						 << " ending burst. Remaining time: " << running->getTimeLeft() << endl;
+
+					//If the process used up less than or equal to half the quantum before heading to waiting, 
+					//then give it a higher priority
+					if( running->getPriorityLevel() != 0 && 
+						running->getBurstInterval() - running->getGuaranteedTime() <= quantum/2 ) { running->decrementPriority(); }
 					waitingQueue.push_back( running ); 
 					running = NULL;
 				}
@@ -363,8 +358,9 @@ public:
 				}
 
 				//If the quantum has been used up, move the running process down a priority level
-				else if( running->getBurstInterval()-running->getGuaranteedTime() == quantum){
+				else if( running->getGuaranteedTime() == 0){
 					running->incrementPriority();
+					running->setGuaranteedTime( pow(2, running->getPriorityLevel()) );
 					readyQueues[ running->getPriorityLevel() ].push_back( running );
 					cout << "Time " << sElapsedTime 
 						 << ": Process " << running->getPID() 
@@ -372,6 +368,16 @@ public:
 					running = NULL;
 				}
 				endBurstTrigger = true; 
+			}
+
+			//If there's a process ready to be put into the running stage and it is open, let it run!
+			if( running == NULL && !endBurstTrigger && !areReadyQueuesEmpty()) {
+				highestOccupiedPriority = getHighestPrioritizedProcessQueue();
+				running = readyQueues[ highestOccupiedPriority ].front();
+				readyQueues[ highestOccupiedPriority ].pop_front();
+				cout << "Time " << sElapsedTime 
+					 << ": Moving process " << running->getPID() 
+					 << " from ready to running. Remaining Time: " << running->getTimeLeft() << endl;
 			}
 			sElapsedTime++;
 		}
