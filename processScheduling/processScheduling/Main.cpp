@@ -182,12 +182,13 @@ public:
 					cout << "Time " << sElapsedTime << ": Process " << running->getPID() << " finished." << endl;
 					delete running;
 					running = NULL; 
+					if( contextSwitchDelay > 0 ) { endBurstTrigger = true; }
 				}
 				else if( endBurst( running ) ){
 					cout << "Time " << sElapsedTime << ": Process " << running->getPID() << " ending burst (" << running->getBurstInterval() << ").  Remaining time: " << running->getTimeLeft() << endl;
 					waitingQueue.push_back( running ); running = NULL; 
+					if( contextSwitchDelay > 0 ) { endBurstTrigger = true; }
 				}
-				if( contextSwitchDelay > 0 ) { endBurstTrigger = true; }
 			}
 			//If there's a process ready to be put into the running stage and it is open, let it run!
 			if( readyQueue.size() > 0 && running == NULL && !endBurstTrigger) {
@@ -336,6 +337,7 @@ public:
 					cout << "Time " << sElapsedTime << ": Process " << running->getPID() << " finished." << endl;
 					delete running;
 					running = NULL;
+					if( contextSwitchDelay > 0 ) { endBurstTrigger = true; }
 				}
 				
 				//Check if avg burst is finished & adjust priority accordingly
@@ -350,6 +352,7 @@ public:
 						running->getBurstInterval() - running->getGuaranteedTime() <= quantum/2 ) { running->decrementPriority(); }
 					waitingQueue.push_back( running ); 
 					running = NULL;
+					if( contextSwitchDelay > 0 ) { endBurstTrigger = true; }
 				}
 
 				//If a higher priority process exists, preempt the currently running process
@@ -357,6 +360,7 @@ public:
 					readyQueues[ running->getPriorityLevel() ].push_front( running );
 					cout << "Time " << sElapsedTime << ": Process " << running->getPID() << " preempted." << endl;
 					running = NULL;
+					if( contextSwitchDelay > 0 ) { endBurstTrigger = true; }
 				}
 
 				//If the quantum has been used up, move the running process down a priority level
@@ -368,8 +372,8 @@ public:
 						 << ": Process " << running->getPID() 
 						 << " ending quantum. Remaining time: " << running->getTimeLeft() << endl;
 					running = NULL;
+					if( contextSwitchDelay > 0 ) { endBurstTrigger = true; }
 				}
-				endBurstTrigger = true; 
 			}
 
 			//If there's a process ready to be put into the running stage and it is open, let it run!
@@ -428,11 +432,19 @@ int main(){
 		}
 	}
 
-	//If times don't match sample output, then it might be the process & scheduler text files
-	/*FCFS fcfs = FCFS( arrivalQueue, ioDelay, contextSwitchDelay, debug, randomFile );
-	fcfs.run();*/
+	string choice;
+	cout << "1. FCFS" << endl << "2. CTSS" << endl;
+	cin >> choice;
+	while( choice != "1" && choice != "2" ){ cin >> choice; }
 
-	CTSS ctss = CTSS( arrivalQueue, ioDelay, contextSwitchDelay, debug, randomFile, CTSSQueues );
-	ctss.run();
+	if( choice == "1" ){
+		FCFS fcfs = FCFS( arrivalQueue, ioDelay, contextSwitchDelay, debug, randomFile );
+		fcfs.run();
+	}
+
+	if( choice == "2" ){
+		CTSS ctss = CTSS( arrivalQueue, ioDelay, contextSwitchDelay, debug, randomFile, CTSSQueues );
+		ctss.run();
+	}
 
 }
