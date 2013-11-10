@@ -180,6 +180,7 @@ public:
 				running->decrementTimeLeft(); running->incrementburstInterval(); 
 				if( running->getTimeLeft() == 0 ) { 
 					cout << "Time " << sElapsedTime << ": Process " << running->getPID() << " finished." << endl;
+					delete running;
 					running = NULL; 
 				}
 				else if( endBurst( running ) ){
@@ -333,6 +334,7 @@ public:
 				//Check if it has used up all the CPU time it needs
 				if( running->getTimeLeft() == 0 ) { 
 					cout << "Time " << sElapsedTime << ": Process " << running->getPID() << " finished." << endl;
+					delete running;
 					running = NULL;
 				}
 				
