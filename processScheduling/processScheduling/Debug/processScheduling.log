@@ -1,19 +1,19 @@
-﻿Build started 11/8/2013 12:02:11 AM.
-     1>Project "C:\Users\Tony\Documents\OperatingSystems\processScheduling\processScheduling\processScheduling.vcxproj" on node 2 (Build target(s)).
-     1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt Main.cpp
-         Main.cpp
-     1>c:\users\tony\documents\operatingsystems\processscheduling\processscheduling\main.cpp(214): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\tony\documents\operatingsystems\processscheduling\processscheduling\main.cpp(302): warning C4244: 'argument' : conversion from 'double' to 'int', possible loss of data
-     1>c:\users\tony\documents\operatingsystems\processscheduling\processscheduling\main.cpp(326): warning C4244: '=' : conversion from 'double' to 'int', possible loss of data
-     1>c:\users\tony\documents\operatingsystems\processscheduling\processscheduling\main.cpp(359): warning C4244: 'argument' : conversion from 'double' to 'int', possible loss of data
-     1>c:\users\tony\documents\operatingsystems\processscheduling\processscheduling\main.cpp(268): warning C4715: 'CTSS::getHighestPrioritizedProcessQueue' : not all control paths return a value
-     1>c:\users\tony\documents\operatingsystems\processscheduling\processscheduling\main.cpp(85): warning C4715: 'Scheduler::endBurst' : not all control paths return a value
-       Link:
-         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Tony\Documents\OperatingSystems\processScheduling\Debug\processScheduling.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\Tony\Documents\OperatingSystems\processScheduling\Debug\processScheduling.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Tony\Documents\OperatingSystems\processScheduling\Debug\processScheduling.lib" /MACHINE:X86 Debug\Main.obj
-         processScheduling.vcxproj -> C:\Users\Tony\Documents\OperatingSystems\processScheduling\Debug\processScheduling.exe
-     1>Done Building Project "C:\Users\Tony\Documents\OperatingSystems\processScheduling\processScheduling\processScheduling.vcxproj" (Build target(s)).
+﻿Build started 12/1/2013 8:54:42 PM.
+Project "C:\Users\Emrys\Documents\GitHub\operatingSystems\processScheduling\processScheduling\processScheduling.vcxproj" on node 2 (Build target(s)).
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt Main.cpp
+  Main.cpp
+c:\users\emrys\documents\github\operatingsystems\processscheduling\processscheduling\main.cpp(216): warning C4018: '<' : signed/unsigned mismatch
+c:\users\emrys\documents\github\operatingsystems\processscheduling\processscheduling\main.cpp(306): warning C4244: 'argument' : conversion from 'double' to 'int', possible loss of data
+c:\users\emrys\documents\github\operatingsystems\processscheduling\processscheduling\main.cpp(330): warning C4244: '=' : conversion from 'double' to 'int', possible loss of data
+c:\users\emrys\documents\github\operatingsystems\processscheduling\processscheduling\main.cpp(369): warning C4244: 'argument' : conversion from 'double' to 'int', possible loss of data
+c:\users\emrys\documents\github\operatingsystems\processscheduling\processscheduling\main.cpp(272): warning C4715: 'CTSS::getHighestPrioritizedProcessQueue' : not all control paths return a value
+c:\users\emrys\documents\github\operatingsystems\processscheduling\processscheduling\main.cpp(85): warning C4715: 'Scheduler::endBurst' : not all control paths return a value
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Emrys\Documents\GitHub\operatingSystems\processScheduling\Debug\processScheduling.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\Emrys\Documents\GitHub\operatingSystems\processScheduling\Debug\processScheduling.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Emrys\Documents\GitHub\operatingSystems\processScheduling\Debug\processScheduling.lib" /MACHINE:X86 Debug\Main.obj
+  processScheduling.vcxproj -> C:\Users\Emrys\Documents\GitHub\operatingSystems\processScheduling\Debug\processScheduling.exe
+Done Building Project "C:\Users\Emrys\Documents\GitHub\operatingSystems\processScheduling\processScheduling\processScheduling.vcxproj" (Build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:01.76
+Time Elapsed 00:00:03.65
