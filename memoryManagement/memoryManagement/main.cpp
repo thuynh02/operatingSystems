@@ -125,9 +125,10 @@ class Clock{
 private:
 	PageTable* frames;
 	int next;
+	bool debug;
 
 public:
-	Clock( PageTable* frames ) : frames(frames), next(0) {}
+	Clock( PageTable* frames, bool debug ) : frames(frames), next(int(0)), debug(debug) {}
 
 
 	//Searches through the vector of pages to see if the process reference exists. True is returned if a fault occurs
@@ -180,23 +181,42 @@ public:
 		return frames->pages[index];
 	}
 
+	//Cleans out pages with the given process id
+	void clearPID( int pid ){
+		if( debug ){ cout << "Freeing frames: "; }
+		for( size_t i = 0; i < frames->pages.size(); ++i ){
+			if( frames->pages[i] != NULL && frames->pages[i]->pid == pid ){
+				frames->pages[i] = NULL;
+				if( debug ){ cout << i << " "; }
+			}
+		}
+		if( debug ){ cout << endl; }
+	}
+
 
 	//Testing purposes
 	void status(){
-		//cout << "Free Pages: ";
-		//for( size_t i = 0; i < frames->pages.size(); ++i ){
-		//	if( frames->pages[i] == NULL ){ cout << i << " "; }
-		//}
-		//cout << endl;
-		cout << "MMU:" << endl;
+		cout << "Clock:" << endl;
 		for( size_t i = 0; i < frames->pages.size(); ++i ){
-			if( frames->pages[i] != NULL ){
+			if( i == next ){ cout << "->" << i << ") "; }
+			else{ cout << "  " << i << ") ";}
+
+			if( frames->pages[i] == NULL ){
+				cout << "EMPTY" << endl;
+			}
+			else{
 				PageTableEntry* current = frames->pages[i];
-				cout << " R/W: " << ((current->dirtyBit) ? 'W' : 'R' ) << " VA: " << current->addr
-					<< " PID: " << current->pid << " Page: " << current->frame 
-					<< " Ref: " << current->refBit << endl;
+				cout << "R/W: " << ((current->dirtyBit) ? 'W' : 'R' ) << "; VA: " << current->addr
+					<< "; PID: " << current->pid << "; Ref: " << current->refBit << endl;
 			}
 		}
+
+		
+		cout << "  Free Frames: ";
+		for( size_t i = 0; i < frames->pages.size(); ++i ){
+			if( frames->pages[i] == NULL ){ cout << i << " "; }
+		}
+		cout << endl;
 	}
 
 };
@@ -210,10 +230,11 @@ private:
 	deque<Process*> blocked;
 	int missPenalty, dirtyPagePenalty, elapsedTime;
 	Clock* MMU;
+	bool debug;
 
 public:
-	Scheduler( deque<Process*>& arrivals, int missPenalty, int dirtyPagePenalty, Clock* MMU ) 
-		: running(NULL), arrivals(arrivals), missPenalty(missPenalty), dirtyPagePenalty(dirtyPagePenalty), MMU(MMU) {}
+	Scheduler( deque<Process*>& arrivals, int missPenalty, int dirtyPagePenalty, Clock* MMU, bool debug ) 
+		: running(NULL), arrivals(arrivals), missPenalty(missPenalty), dirtyPagePenalty(dirtyPagePenalty), MMU(MMU), debug(debug) {}
 	
 	//Display entry info
 	void displayEntry( PageTableEntry* currentEntry, string placementType ){
@@ -284,6 +305,8 @@ public:
 					//If you didn't fault, that means the reference is good to go! You've got a hit
 					placementType = "Hit";
 					displayEntry( currentEntry, placementType );
+					MMU->getFrameEntryAt( currentEntry->frame )->refBit = 1; //Update ref bit in clock
+
 
 					//If the reference was a write, we need to make sure to flag the entry as "dirty"
 					if( currentEntry->dirtyBit ){
@@ -296,7 +319,7 @@ public:
 					//If the currentEntry becomes NULL, then the process is finished with all references!
 					//Make sure to "clean" out the pages it used up in physical memory
 					if( currentEntry == NULL ){
-						
+						MMU->clearPID( running->getPID() );
 					}
 
 				}
@@ -305,7 +328,6 @@ public:
 				if( currentEntry != NULL && currentEntry->validBit == 0 ){
 					currentEntry->refBit = 1;
 					placementType = MMU->findOpenMemory( *currentEntry );
-					//MMU->status(); //For debugging
 					
 					//Other references of the same page must be notified that they have a spot in physical mem now
 					for( int i = 0; currentTable->pages[i] != NULL && i < currentTable->pages.size(); ++i ){
@@ -315,10 +337,22 @@ public:
 						}
 					}
 
+					//Apply penalty time as see fit
 					displayEntry( currentEntry, placementType );
 					if( placementType == "Dirty" ) { running->setWaitTime( missPenalty + dirtyPagePenalty ); }
 					else{ running->setWaitTime( missPenalty ); }
 					blocked.push_back( running );
+
+				}
+
+				
+				//debug
+				if( debug ){
+					MMU->status(); //For debugging
+					if( running->getWaitTime() > 0 ){
+						cout << "Process: " << running->getPID()
+						<< "\tWaiting: " << running->getWaitTime() << endl << endl;
+					}
 				}
 
 				//The process has done all it can in this run cycle, by this point. Open running up for another process
@@ -432,8 +466,8 @@ int main(){
 	else{ readReferenceFile(referenceFile, processes, pageSize, VAbits); }
 
 	PageTable frameTable = PageTable( pow(2, PAbits)/pageSize );
-	Clock MMU = Clock( &frameTable );
-	Scheduler scheduler(processes, missPenalty, dirtyPagePenalty, &MMU);
+	Clock MMU = Clock( &frameTable, debug );
+	Scheduler scheduler(processes, missPenalty, dirtyPagePenalty, &MMU, debug);
 	scheduler.run();
 
 	//displayMemFileInfo( referenceFileName, missPenalty, dirtyPagePenalty, pageSize, VAbits, PAbits, debug ); 
