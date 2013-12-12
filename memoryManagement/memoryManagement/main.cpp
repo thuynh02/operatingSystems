@@ -6,8 +6,6 @@
 #include <cmath>
 using namespace std;
 
-//THINGS TO FIX
-//When a process is finished, their page entries aren't cleaned from physical memory. Clean up after yourself!
 
 struct Reference{
 	int addr;
@@ -144,9 +142,9 @@ public:
 
 	//Searches through the vector of pages to find a space for the reference.
 	//	Returns the type of placement
-	//		F = Free	(Returned if a NULL is replaced)
-	//		C = Clean	(Returned if a clean entry was replaced)
-	//		D = Dirty	(Returned if a dirty entry was replaced)
+	//		Free	(Returned if a NULL is replaced)
+	//		Clean	(Returned if a clean entry was replaced)
+	//		Dirty	(Returned if a dirty entry was replaced)
 	string findOpenMemory( PageTableEntry& request ){
 		string placementType;
 		bool found = false;
@@ -194,7 +192,7 @@ public:
 	}
 
 
-	//Testing purposes
+	//Debug
 	void status(){
 		cout << "Clock:" << endl;
 		for( size_t i = 0; i < frames->pages.size(); ++i ){
@@ -469,9 +467,4 @@ int main(){
 	Clock MMU = Clock( &frameTable, debug );
 	Scheduler scheduler(processes, missPenalty, dirtyPagePenalty, &MMU, debug);
 	scheduler.run();
-
-	//displayMemFileInfo( referenceFileName, missPenalty, dirtyPagePenalty, pageSize, VAbits, PAbits, debug ); 
-	//displayRefFileInfo( processes );
-
-	//for( size_t i = 0; i < processes.size(); ++i ){ processes[i]->displayPageTable(); }
 }
